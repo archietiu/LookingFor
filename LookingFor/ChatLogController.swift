@@ -21,42 +21,56 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
 //        }
 //    }
     var user: User?
-    var party: Party? {
+    var partyUsers = [PartyUsers]() {
         didSet {
             observeMessages()
         }
     }
-    var partyUsers = [PartyUsers]()
+    var party: Party? {
+        didSet {
+            observePartyUsers()
+        }
+    }
     var message: Message?
     var messages = [Message]()
     var messagesDictionary = [String: Message]()
     let layoutFlow = UICollectionViewFlowLayout()
     
-    func fetchPartyUsers() {
+    func observePartyUsers() {
+        print("begin fetchPartyUsers")
         guard let partyId = party?.id else { return }
         Database.database().reference().child("party-users").child(partyId).observe(.childAdded, with: { (partyUsersSnapshot) in
-            self.partyUsers.removeAll()
+            print("process fetchPartyUsers")
             guard let userIdKey = String(partyUsersSnapshot.key) else { return }
             let partyUser = PartyUsers(partyId: partyId, userId: userIdKey)
             partyUser.partyId = partyId
             self.partyUsers.append(partyUser)
-            partyUser.printModel()
+//            partyUser.printModel()
+            
+            DispatchQueue.main.async(execute: { 
+                print("dispatch queue main")
+            })
+            
         }, withCancel: nil)
+        
+        print("end fetchPartyUsers")
+        print("clear partyUsers")
+        partyUsers.removeAll()
     }
     
     func observeMessages() {
-//        guard let partyId = party?.id else { return }
-//        Database.database().reference().child("party-users").child(partyId).observe(.childAdded, with: { (snapshot) in
-//            let partyUser = snapshot.key as String?
-//            guard let userId = self.user?.id, let toId = partyUser else { return }
-//            
-//            let userMessagesRef = Database.database().reference().child("user-messages").child(userId).child(toId)
-//            userMessagesRef.observe(.childAdded, with: { (snapshot) in
-//                let messageId = snapshot.key
-//                self.fetchMessage(withMessageId: messageId, toPartyId: partyId)
-//            }, withCancel: nil)
-//            
-//        }, withCancel: nil)
+        print("begin observeMessages")
+        print(partyUsers.count)
+        for partyUser in partyUsers {
+            print("process observeMessages")
+            guard let fromId = self.user?.id, let partyId = partyUser.partyId, let toId = partyUser.userId else { return }
+            let userMessagesRef = Database.database().reference().child("user-messages").child(fromId).child(toId)
+            userMessagesRef.observe(.childAdded, with: { (snapshot) in
+                let messageId = snapshot.key
+                self.fetchMessage(withMessageId: messageId, toPartyId: partyId)
+            }, withCancel: nil)
+            print("end observeMessages")
+        }
     }
     
     func fetchMessage(withMessageId messageId: String, toPartyId partyId: String) {
@@ -121,7 +135,6 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         
         collectionView?.keyboardDismissMode = .interactive
         setupKeyboardObservers()
-        fetchPartyUsers()
 //        observeMessages()
     }
     
