@@ -40,17 +40,23 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
             let partyUser = PartyUsers(partyId: partyId, userId: userIdKey)
             partyUser.partyId = partyId
             self.partyUsers.append(partyUser)
+            partyUser.printModel()
         }, withCancel: nil)
     }
     
     func observeMessages() {
-//        for userId in partyUsers
-//        
-//        let userMessagesRef = Database.database().reference().child("user-messages").child(userId).child(toId)
-//        userMessagesRef.observe(.childAdded, with: { (snapshot) in
-//            let messageId = snapshot.key
-//            self.fetchMessage(withMessageId: messageId, toPartyId: partyId)
-//        }, withCancel: nil)
+        guard let partyId = party?.id else { return }
+        Database.database().reference().child("party-users").child(partyId).observe(.childAdded, with: { (snapshot) in
+            let partyUser = snapshot.key as String?
+            guard let userId = self.user?.id, let toId = partyUser else { return }
+            
+            let userMessagesRef = Database.database().reference().child("user-messages").child(userId).child(toId)
+            userMessagesRef.observe(.childAdded, with: { (snapshot) in
+                let messageId = snapshot.key
+                self.fetchMessage(withMessageId: messageId, toPartyId: partyId)
+            }, withCancel: nil)
+            
+        }, withCancel: nil)
     }
     
     func fetchMessage(withMessageId messageId: String, toPartyId partyId: String) {
