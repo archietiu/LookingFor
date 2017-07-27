@@ -44,13 +44,13 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     }
     
     func observeMessages() {
-        for userId in partyUsers
-        
-        let userMessagesRef = Database.database().reference().child("user-messages").child(userId).child(toId)
-        userMessagesRef.observe(.childAdded, with: { (snapshot) in
-            let messageId = snapshot.key
-            self.fetchMessage(withMessageId: messageId, toPartyId: partyId)
-        }, withCancel: nil)
+//        for userId in partyUsers
+//        
+//        let userMessagesRef = Database.database().reference().child("user-messages").child(userId).child(toId)
+//        userMessagesRef.observe(.childAdded, with: { (snapshot) in
+//            let messageId = snapshot.key
+//            self.fetchMessage(withMessageId: messageId, toPartyId: partyId)
+//        }, withCancel: nil)
     }
     
     func fetchMessage(withMessageId messageId: String, toPartyId partyId: String) {
