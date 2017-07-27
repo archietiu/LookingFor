@@ -134,10 +134,23 @@ class PartyListController: UITableViewController, UISearchResultsUpdating, UISea
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
-        chatLogController.user = user
-        chatLogController.party = parties[indexPath.row]
-        navigationController?.pushViewController(chatLogController, animated: true)
+        guard let userId = user?.id, let partyId = parties[indexPath.row].id else { return }
+        Database.database().reference().child("party-users").child(partyId).child(userId).observeSingleEvent(of: .childAdded, with: { (snapshot) in
+            if userId == snapshot.key {
+                let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
+                chatLogController.user = self.user
+                chatLogController.party = self.parties[indexPath.row]
+                self.navigationController?.pushViewController(chatLogController, animated: true)
+            }
+            else {
+                let controller = PartyController()
+                controller.party = self.parties[indexPath.row]
+                controller.user = self.user
+                self.navigationController?.pushViewController(controller, animated: true)
+            }
+        })
+        
+        
     }
 }
 

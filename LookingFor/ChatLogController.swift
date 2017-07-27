@@ -45,11 +45,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
             let partyUser = PartyUsers(partyId: partyId, userId: userIdKey)
             partyUser.partyId = partyId
             self.partyUsers.append(partyUser)
-//            partyUser.printModel()
-            
-            DispatchQueue.main.async(execute: { 
-                print("dispatch queue main")
-            })
+            partyUser.printModel()
             
         }, withCancel: nil)
         
@@ -74,6 +70,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     }
     
     func fetchMessage(withMessageId messageId: String, toPartyId partyId: String) {
+        print(partyId)
         let messagesRef = Database.database().reference().child("messages").child(partyId).child(messageId)
         messagesRef.observeSingleEvent(of: .value, with: { (snapshot) in
             print(snapshot)
@@ -557,8 +554,8 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     
     // MARK: - This is being triggered when a user joins a party. FIX: use observeSingleEvent maybe?
     func sendMessagesToPartyMembers(fromSender fromId: String, toPartyId partyId: String, withMessageId messageId: String) {
-        Database.database().reference().child("party-users").child(partyId).observe(.childAdded, with: { (partyUserSnapshot) in
-            let partyUserId = partyUserSnapshot.key
+        for partyUser in partyUsers {
+            guard let partyUserId = partyUser.userId else { return }
             if partyUserId != fromId {
                 
                 let userMessageFromToRef = Database.database().reference().child("user-messages").child(fromId).child(partyUserId)
@@ -569,7 +566,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
                 let userMessageToFromValues = [messageId: 1]  as [String: Any]
                 userMessageToFromRef.updateChildValues(userMessageToFromValues)
             }
-        }, withCancel: nil)
+        }
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
