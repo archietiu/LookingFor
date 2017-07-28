@@ -357,6 +357,8 @@ class CreatePartyController: UIViewController {
                 "endDate": endDate.timeIntervalSince1970,
                 "place": place,
                 "address": address,
+                "long": long,
+                "lat": lat,
                 "isActive": 1
             ] as [String: Any]
             partyChildRef.updateChildValues(partyValues) { (error, ref) in
@@ -396,6 +398,40 @@ class CreatePartyController: UIViewController {
                 }
                 print("Successfully added new party-locations")
             }
+            
+            guard let userId = user?.id, let userName = user?.name, let userEmail = user?.email, let userProfileImageUrl = user?.profileImageUrl else { return }
+            let partyMemberChildRef = Database.database().reference().child("party-users").child(partyChildRef.key).child(userId)
+            let partyMemberValues = ["name": userName, "email": userEmail, "profileImageUrl": userProfileImageUrl] as [String: Any]
+            partyMemberChildRef.updateChildValues(partyMemberValues) { (error, ref) in
+                if error != nil {
+                    print(error!)
+                    return
+                }
+                print("Successfully joined the party!")
+            }
+            
+            let userPartyChildRef = Database.database().reference().child("user-parties").child(userId).child(partyChildRef.key)
+            let userPartyValues = [
+                "createdBy": userId,
+                "name": name,
+                "description": description,
+                "startDate": startDate.timeIntervalSince1970,
+                "endDate": endDate.timeIntervalSince1970,
+                "place": place,
+                "address": address,
+                "long": long,
+                "lat": lat,
+                "isActive": 1
+                ] as [String: Any]
+            userPartyChildRef.updateChildValues(userPartyValues) { (error, ref) in
+                if error != nil {
+                    print(error!)
+                    return
+                }
+                print("Successfully created user-parties")
+            }
+            
+            
             
             dismiss(animated: true, completion: nil)
         }

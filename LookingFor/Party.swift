@@ -17,7 +17,9 @@ class Party: NSObject {
     var endDate: NSNumber?
     var place: String?
     var address: String?
-    var location: Location?
+//    var location: Location?
+    var long: Double?
+    var lat: Double?
     var isActive: Int?
     
     init(dictionary: [String: Any]) {
@@ -28,6 +30,21 @@ class Party: NSObject {
         self.endDate = dictionary["endDate"] as? NSNumber
         self.place = dictionary["place"] as? String
         self.address = dictionary["address"] as? String
+        self.long = dictionary["long"] as? Double
+        self.lat = dictionary["lat"] as? Double
         self.isActive = dictionary["isActive"] as? Int
+    }
+    
+    func printModel() {
+        print(name ?? "no name")
+        print(desc ?? "no desc")
+        print(createdBy ?? "no createdBy")
+        print(startDate ?? "no startDate")
+        print(endDate ?? "no endDate")
+        print(place ?? "no place")
+        print(address ?? "no address")
+        print(long ?? "no long")
+        print(lat ?? "no lat")
+        print(isActive ?? "no isActive")
     }
 }

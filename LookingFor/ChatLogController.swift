@@ -13,13 +13,6 @@ import AVFoundation
 
 class ChatLogController: UICollectionViewController, UITextFieldDelegate, UICollectionViewDelegateFlowLayout, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
-//    var user: User? {
-//        didSet {
-//            navigationItem.title = user?.name
-//            
-//            observeMessages()
-//        }
-//    }
     var user: User?
     var partyUsers = [PartyUsers]() {
         didSet {
@@ -111,20 +104,12 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         })
     }
     
-    lazy var inputTextField: UITextField = {
-        let textField = UITextField()
-        textField.placeholder = "Enter message..."
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.delegate = self
-        return textField
-    }()
-    
     let cellId = "cellId"
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // MARK: - To be revmoved
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Join", style: .plain, target: self, action: #selector(handleJoinLeaveParty))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Leave", style: .plain, target: self, action: #selector(handleLeaveParty))
         collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
         collectionView?.alwaysBounceVertical = true
         collectionView?.backgroundColor = UIColor.white
@@ -135,104 +120,33 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
 //        observeMessages()
     }
     
-    // MARK: - To be revmoved
-    func handleJoinLeaveParty() {
-        guard let partyId = party?.id, let userId = user?.id, let userName = user?.name, let userEmail = user?.email, let userProfileImageUrl = user?.profileImageUrl else { return }
-        let partyMemberChildRef = Database.database().reference().child("party-users").child(partyId).child(userId)
-        let partyMemberValues = ["name": userName, "email": userEmail, "profileImageUrl": userProfileImageUrl] as [String: Any]
-        partyMemberChildRef.updateChildValues(partyMemberValues) { (error, ref) in
-            if error != nil {
-                print(error!)
-                return
-            }
-            print("Successfully joined the party!")
-        }
+    // MARK: - To be removed
+    
+    func handleLeaveParty() {
+        let dbRef = Database.database().reference()
         
-        guard
-            let partyName = party?.name,
-            let createdBy = party?.createdBy,
-            let startDate = party?.startDate,
-            let endDate = party?.endDate,
-            let place = party?.place,
-            let isActive = party?.isActive else { return }
-        let userPartyChildRef = Database.database().reference().child("user-parties").child(userId).child(partyId)
-        let userPartyValues = [
-            "name": partyName,
-            "createdBy": createdBy,
-            "startDate": startDate,
-            "endDate": endDate,
-            "place": place,
-            "address": party?.address ?? "no address",
-            "isActive": isActive
-            ] as [String: Any]
-        userPartyChildRef.updateChildValues(userPartyValues) { (error, ref) in
-            if error != nil {
-                print(error!)
-                return
-            }
-            print("Successfully created user-parties")
-        }
-        
-        let alert = UIAlertController(title: "Awesome!", message: "You have successfully joined a party", preferredStyle: .alert)
+        let alert = UIAlertController(title: "Leave Party", message: "Are you sure you want to leave the party?", preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (_) in
-            alert.dismiss(animated: true, completion: nil)
+            guard let userId = self.user?.id, let partyId = self.party?.id else { return }
+            dbRef.child("party-users").child(partyId).child(userId).removeValue()
+            dbRef.child("user-parties").child(userId).child(partyId).removeValue()
+            self.navigationController?.popViewController(animated: true)
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: { [weak alert] (_) in
+            alert?.dismiss(animated: true, completion: nil)
         }))
         
         // 4. Present the alert.
         self.present(alert, animated: true, completion: nil)
-        
     }
     
     // need to create reference in order for the keyboard accessory to access the inputTextField
-    lazy var inputContainerView: UIView = {
-        let containerView = UIView()
-        containerView.frame = CGRect(x: 0, y: 0, width: self.view.frame.width, height: 50)
-        containerView.backgroundColor = UIColor.white
-        
-        let uploadImageView = UIImageView()
-        uploadImageView.isUserInteractionEnabled = true
-        uploadImageView.image = UIImage(named: "upload_image_icon")
-        uploadImageView.translatesAutoresizingMaskIntoConstraints = false
-        uploadImageView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(handleUploadTap)))
-        containerView.addSubview(uploadImageView)
-        
-        //x,y,w,h
-        uploadImageView.leftAnchor.constraint(equalTo: containerView.leftAnchor).isActive = true
-        uploadImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
-        uploadImageView.widthAnchor.constraint(equalToConstant: 44).isActive = true
-        uploadImageView.heightAnchor.constraint(equalToConstant: 44).isActive = true
-
-        
-        let sendButton = UIButton(type: .system)
-        sendButton.setTitle("Send", for: UIControlState())
-        sendButton.translatesAutoresizingMaskIntoConstraints = false
-        sendButton.addTarget(self, action: #selector(handleSend), for: .touchUpInside)
-        containerView.addSubview(sendButton)
-        //x,y,w,h
-        sendButton.rightAnchor.constraint(equalTo: containerView.rightAnchor).isActive = true
-        sendButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
-        sendButton.widthAnchor.constraint(equalToConstant: 80).isActive = true
-        sendButton.heightAnchor.constraint(equalTo: containerView.heightAnchor).isActive = true
-        
-        containerView.addSubview(self.inputTextField)
-        //x,y,w,h
-        self.inputTextField.leftAnchor.constraint(equalTo: uploadImageView.rightAnchor, constant: 8).isActive = true
-        self.inputTextField.centerYAnchor.constraint(equalTo: containerView.centerYAnchor).isActive = true
-        self.inputTextField.rightAnchor.constraint(equalTo: sendButton.leftAnchor).isActive = true
-        self.inputTextField.heightAnchor.constraint(equalTo: containerView.heightAnchor).isActive = true
-        
-        let separatorLineView = UIView()
-        separatorLineView.backgroundColor = UIColor(r: 220, g: 220, b: 220)
-        separatorLineView.translatesAutoresizingMaskIntoConstraints = false
-        containerView.addSubview(separatorLineView)
-        //x,y,w,h
-        separatorLineView.leftAnchor.constraint(equalTo: containerView.leftAnchor).isActive = true
-        separatorLineView.topAnchor.constraint(equalTo: containerView.topAnchor).isActive = true
-        separatorLineView.widthAnchor.constraint(equalTo: containerView.widthAnchor).isActive = true
-        separatorLineView.heightAnchor.constraint(equalToConstant: 1).isActive = true
-        
-        return containerView
+    lazy var inputContainerView: ChatInputContainerView = {
+        let chatInputContanerView = ChatInputContainerView(frame: CGRect(x: 0, y: 0, width: self.view.frame.width, height: 50))
+        chatInputContanerView.chatLogController = self
+        return chatInputContanerView
     }()
     
     func handleUploadTap() {
@@ -372,7 +286,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
                 return
             }
             
-            self.inputTextField.text = nil
+            self.inputContainerView.inputTextField.text = nil
             
             let messageId = childRef.key
             self.sendMessagesToPartyMembers(fromSender: fromId, toPartyId: toId, withMessageId: messageId)
@@ -537,7 +451,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         let ref = Database.database().reference().child("messages")
         let messageChildRef = ref.child(toId).childByAutoId()
         let timestamp = Int(Date().timeIntervalSince1970)
-        let messageValues = ["message": inputTextField.text!, "toId": toId, "fromId": fromId, "timestamp": timestamp] as [String : Any]
+        let messageValues = ["message": inputContainerView.inputTextField.text!, "toId": toId, "fromId": fromId, "timestamp": timestamp] as [String : Any]
         
         messageChildRef.updateChildValues(messageValues) { (error, ref) in
             if error != nil {
@@ -545,7 +459,7 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
                 return
             }
             print("Successfully added new message")
-            self.inputTextField.text = nil
+            self.inputContainerView.inputTextField.text = nil
             
             let messageId = messageChildRef.key
             self.sendMessagesToPartyMembers(fromSender: fromId, toPartyId: toId, withMessageId: messageId)
@@ -567,11 +481,6 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
                 userMessageToFromRef.updateChildValues(userMessageToFromValues)
             }
         }
-    }
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        handleSend()
-        return true
     }
     
     var startingFrame: CGRect?

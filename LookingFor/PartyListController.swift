@@ -100,16 +100,6 @@ class PartyListController: UITableViewController, UISearchResultsUpdating, UISea
             let party = Party(dictionary: dictionary)
             party.id = partiesSnapshot.key
             self.parties.append(party)
-//            for pt in self.parties {
-//                print(pt.id ?? "no id")
-//                print(pt.name ?? "no name")
-//                print(pt.desc ?? "no desc")
-//                print(pt.location ?? "no location")
-//                print(pt.startDate ?? "no startDate")
-//                print(pt.endDate ?? "no endDate")
-//                print(pt.longitude ?? "no longitude")
-//                print(pt.latitude ?? "no latitude")
-//            }
             
             DispatchQueue.main.async(execute: {
                 self.tableView.reloadData()
@@ -134,23 +124,43 @@ class PartyListController: UITableViewController, UISearchResultsUpdating, UISea
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let userId = user?.id, let partyId = parties[indexPath.row].id else { return }
-        Database.database().reference().child("party-users").child(partyId).child(userId).observeSingleEvent(of: .childAdded, with: { (snapshot) in
-            if userId == snapshot.key {
+        guard let userId = user?.id else { return }
+        let party = parties[indexPath.row]
+        showChatLogController(forParty: party, withUserId: userId)
+    }
+    
+    func showChatLogController(forParty party: Party, withUserId userId: String) {
+        guard let partyId = party.id, let userId = user?.id else { return }
+        let dbChildRef = Database.database().reference().child("party-users").child(partyId)
+        let queryChildRef = dbChildRef.queryOrderedByKey().queryEqual(toValue: userId)
+        queryChildRef.observeSingleEvent(of: .value, with: { (snapshot) in
+            if snapshot.exists() {
+                print("User is in the party!")
                 let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
                 chatLogController.user = self.user
-                chatLogController.party = self.parties[indexPath.row]
+                chatLogController.party = party
                 self.navigationController?.pushViewController(chatLogController, animated: true)
+            } else {
+                print("User is not in the party!")
+                let partyController = PartyController()
+                partyController.party = party
+                partyController.user = self.user
+                self.navigationController?.pushViewController(partyController, animated: true)
             }
-            else {
-                let controller = PartyController()
-                controller.party = self.parties[indexPath.row]
-                controller.user = self.user
-                self.navigationController?.pushViewController(controller, animated: true)
-            }
-        })
+        }, withCancel: nil)
         
-        
+//        if userId == snapshot.key {
+//            let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
+//            chatLogController.user = self.user
+//            chatLogController.party = party
+//            self.navigationController?.pushViewController(chatLogController, animated: true)
+//        }
+//        else {
+//            let partyController = PartyController()
+//            partyController.party = party
+//            partyController.user = self.user
+//            self.navigationController?.pushViewController(partyController, animated: true)
+//        }
     }
 }
 
