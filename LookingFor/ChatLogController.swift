@@ -105,11 +105,14 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
     }
     
     let cellId = "cellId"
-    
+  
     override func viewDidLoad() {
         super.viewDidLoad()
-        // MARK: - To be revmoved
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Leave", style: .plain, target: self, action: #selector(handleLeaveParty))
+        
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Party", style: .plain, target: self, action: #selector(handleShowPartyDetail))
+        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["teal"]
+        navigationController?.navigationBar.isOpaque = false
+        navigationController?.navigationBar.tintColor = UIColor.white
         collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
         collectionView?.alwaysBounceVertical = true
         collectionView?.backgroundColor = UIColor.white
@@ -117,30 +120,16 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         
         collectionView?.keyboardDismissMode = .interactive
         setupKeyboardObservers()
-//        observeMessages()
     }
     
-    // MARK: - To be removed
-    
-    func handleLeaveParty() {
-        let dbRef = Database.database().reference()
-        
-        let alert = UIAlertController(title: "Leave Party", message: "Are you sure you want to leave the party?", preferredStyle: .alert)
-        
-        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (_) in
-            guard let userId = self.user?.id, let partyId = self.party?.id else { return }
-            dbRef.child("party-users").child(partyId).child(userId).removeValue()
-            dbRef.child("user-parties").child(userId).child(partyId).removeValue()
-            self.navigationController?.popViewController(animated: true)
-        }))
-        
-        alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: { [weak alert] (_) in
-            alert?.dismiss(animated: true, completion: nil)
-        }))
-        
-        // 4. Present the alert.
-        self.present(alert, animated: true, completion: nil)
+    func handleShowPartyDetail() {
+        let partyController = PartyController()
+        partyController.navigationBarTitle = "Leave"
+        partyController.user = self.user
+        partyController.party = self.party
+        navigationController?.pushViewController(partyController, animated: true)
     }
+    
     
     // need to create reference in order for the keyboard accessory to access the inputTextField
     lazy var inputContainerView: ChatInputContainerView = {

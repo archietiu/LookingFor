@@ -40,6 +40,7 @@
 		B1D436C41F1B7A6800996C6A /* DatabaseReference.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D436C31F1B7A6800996C6A /* DatabaseReference.swift */; };
 		B1D436C61F1BBEAF00996C6A /* Party.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D436C51F1BBEAF00996C6A /* Party.swift */; };
 		B1D436C81F1BC24600996C6A /* PartyCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1D436C71F1BC24600996C6A /* PartyCell.swift */; };
+		B1E8D9921F2DFB040066DA5C /* LobbyController1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1E8D9911F2DFB040066DA5C /* LobbyController1.swift */; };
 		B1FD27461F204D6B00A0419E /* PartyController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1FD27451F204D6B00A0419E /* PartyController.swift */; };
 		B1FD27481F20D85100A0419E /* ChatLogController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1FD27471F20D85100A0419E /* ChatLogController.swift */; };
 		B1FD274A1F20D87200A0419E /* Message.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1FD27491F20D87200A0419E /* Message.swift */; };
@@ -83,6 +84,7 @@
 		B1D436C31F1B7A6800996C6A /* DatabaseReference.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DatabaseReference.swift; sourceTree = "<group>"; };
 		B1D436C51F1BBEAF00996C6A /* Party.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Party.swift; sourceTree = "<group>"; };
 		B1D436C71F1BC24600996C6A /* PartyCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PartyCell.swift; sourceTree = "<group>"; };
+		B1E8D9911F2DFB040066DA5C /* LobbyController1.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LobbyController1.swift; sourceTree = "<group>"; };
 		B1FD27451F204D6B00A0419E /* PartyController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PartyController.swift; sourceTree = "<group>"; };
 		B1FD27471F20D85100A0419E /* ChatLogController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChatLogController.swift; sourceTree = "<group>"; };
 		B1FD27491F20D87200A0419E /* Message.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
@@ -170,6 +172,7 @@
 				B12BC3E51F1FC9E700EE1F35 /* PlacePickerController.swift */,
 				B1FD27451F204D6B00A0419E /* PartyController.swift */,
 				B1FD27471F20D85100A0419E /* ChatLogController.swift */,
+				B1E8D9911F2DFB040066DA5C /* LobbyController1.swift */,
 			);
 			name = Controller;
 			sourceTree = "<group>";
@@ -369,6 +372,7 @@
 				B10A6CE21F12665D00AE31D7 /* User.swift in Sources */,
 				B1B8284F1F12548C00620E16 /* LoginController+handlers.swift in Sources */,
 				B10A6CEA1F128BE200AE31D7 /* Interest.swift in Sources */,
+				B1E8D9921F2DFB040066DA5C /* LobbyController1.swift in Sources */,
 				B12BC3E21F1F034400EE1F35 /* PlacesController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

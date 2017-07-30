@@ -55,7 +55,9 @@ class InterestController: UIViewController, UISearchResultsUpdating, UITableView
         super.viewDidLoad()
         hideKeyboardWhenTappedAround()
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(handleAddNewInterest))
-        navigationController?.navigationBar.backgroundColor = UIColor.white
+        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["teal"]
+        navigationController?.navigationBar.isOpaque = false
+        navigationController?.navigationBar.tintColor = UIColor.white
         
         view.addSubview(tableView)
         setupSearchController()

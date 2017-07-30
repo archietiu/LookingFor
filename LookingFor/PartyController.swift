@@ -10,10 +10,11 @@ import UIKit
 import Firebase
 import GoogleMaps
 
-class PartyController: UIViewController, UICollectionViewDelegate, UICollectionViewDataSource {
+class PartyController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
     let cellId = "cellId"
     
+    var joinLeaveButtonTitle: String?
     var party: Party?
     var user: User?
     var users = [User]()
@@ -68,7 +69,7 @@ class PartyController: UIViewController, UICollectionViewDelegate, UICollectionV
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
-        collectionView.backgroundColor = .lightGray
+        collectionView.backgroundColor = .white
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.alwaysBounceHorizontal = true
         return collectionView
@@ -88,16 +89,36 @@ class PartyController: UIViewController, UICollectionViewDelegate, UICollectionV
         return view
     }()
     
+    let joinLeaveButton: UIButton = {
+        let button = UIButton(type: .system)
+//        button.backgroundColor = UIColor(r: 80, g: 101, b: 161)
+        button.backgroundColor = BackgroundColorProvider().colors["green"]
+        button.setTitle("Join", for: UIControlState())
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitleColor(UIColor.white, for: UIControlState())
+        button.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        button.addTarget(self, action: #selector(handleJoinLeaveParty), for: .touchUpInside)
+        return button
+    }()
+    
     var mapView: GMSMapView!
+    
+    var navigationBarTitle: String? {
+        didSet {
+            if navigationBarTitle == "Join" {
+                joinLeaveButton.backgroundColor = BackgroundColorProvider().colors["green"]
+                joinLeaveButton.setTitle(navigationBarTitle, for: UIControlState())
+            } else {
+                joinLeaveButton.backgroundColor = BackgroundColorProvider().colors["red"]
+                joinLeaveButton.setTitle(navigationBarTitle, for: UIControlState())
+            }
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Join", style: .plain, target: self, action: #selector(handleJoinLeaveParty))
         setupLayout()
         fetchParty()
-        partyMembersCollectionView.delegate = self
-        partyMembersCollectionView.dataSource = self
-        partyMembersCollectionView.register(PartyMembersCell.self, forCellWithReuseIdentifier: cellId)
     }
     
     func setupMapView () {
@@ -105,9 +126,7 @@ class PartyController: UIViewController, UICollectionViewDelegate, UICollectionV
         let coordinate = Coordinate(latitude: lat, longitude: long)
         let zoomLevel: Float = 15
         let camera = GMSCameraPosition.camera(withLatitude: coordinate.latitude, longitude: coordinate.longitude, zoom: zoomLevel)
-//        let camera = GMSCameraPosition.camera(withLatitude: 40.2066757, longitude: -74.0437097, zoom: zoomLevel)
         mapView = GMSMapView.map(withFrame: CGRect.zero, camera: camera)
-//        view = mapView
         self.mapContainerView.addSubview(mapView)
         mapView.settings.myLocationButton = false
         mapView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -131,6 +150,12 @@ class PartyController: UIViewController, UICollectionViewDelegate, UICollectionV
         view.addSubview(placeLabelSeparatorView)
         view.addSubview(mapContainerView)
         view.addSubview(partyMembersCollectionView)
+        view.addSubview(partyMembersSeparatorView)
+        view.addSubview(joinLeaveButton)
+        
+        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["teal"]
+        navigationController?.navigationBar.isOpaque = false
+        navigationController?.navigationBar.tintColor = UIColor.white
         
         timeLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 12).isActive = true
         timeLabel.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor, constant: 8).isActive = true
@@ -169,13 +194,82 @@ class PartyController: UIViewController, UICollectionViewDelegate, UICollectionV
         
         setupMapView()
         
-        partyMembersCollectionView.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 12).isActive = true
+        partyMembersCollectionView.delegate = self
+        partyMembersCollectionView.dataSource = self
+        partyMembersCollectionView.register(PartyMembersCell.self, forCellWithReuseIdentifier: cellId)
+        
+        partyMembersCollectionView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
         partyMembersCollectionView.topAnchor.constraint(equalTo: mapContainerView.bottomAnchor, constant: 8).isActive = true
         partyMembersCollectionView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        partyMembersCollectionView.heightAnchor.constraint(equalToConstant: 100).isActive = true
+        partyMembersCollectionView.heightAnchor.constraint(equalToConstant: 120).isActive = true
+        
+        partyMembersSeparatorView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        partyMembersSeparatorView.topAnchor.constraint(equalTo: partyMembersCollectionView.bottomAnchor).isActive = true
+        partyMembersSeparatorView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        partyMembersSeparatorView.heightAnchor.constraint(equalToConstant: 1).isActive = true
+        
+        joinLeaveButton.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        joinLeaveButton.topAnchor.constraint(equalTo: partyMembersSeparatorView.bottomAnchor, constant: 8).isActive = true
+        joinLeaveButton.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        joinLeaveButton.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        print("Apply numberOfItemsInSection")
+        return users.count
+    }
+    
+    
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! PartyMembersCell
+        if let profileImage = users[indexPath.row].profileImageUrl, let userName = users[indexPath.row].name {
+            cell.profileImageView.loadImageUsingCacheWithUrlString(profileImage)
+            cell.partyMemberNameLabel.text = userName
+        }
+        print("Apply cellForItemAt")
+        return cell
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        print("Apply sizeForItemAt")
+        return CGSize(width: 70, height: 90)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        print("Apply insetForSectionAt")
+        return UIEdgeInsetsMake(0, 12, 0, 12)
     }
     
     func handleJoinLeaveParty() {
+        if navigationBarTitle == "Join" {
+            joinParty()
+        } else {
+            leaveParty()
+        }
+    }
+    
+    func leaveParty() {
+        let dbRef = Database.database().reference()
+        
+        let alert = UIAlertController(title: "Leave Party", message: "Are you sure you want to leave the party?", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (_) in
+            guard let userId = self.user?.id, let partyId = self.party?.id else { return }
+            dbRef.child("party-users").child(partyId).child(userId).removeValue()
+            dbRef.child("user-parties").child(userId).child(partyId).removeValue()
+            self.navigationController?.popViewController(animated: true)
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: { [weak alert] (_) in
+            alert?.dismiss(animated: true, completion: nil)
+        }))
+        
+        // 4. Present the alert.
+        self.present(alert, animated: true, completion: nil)
+    }
+    
+    func joinParty() {
         guard let partyId = party?.id, let userId = user?.id, let userName = user?.name, let userEmail = user?.email, let userProfileImageUrl = user?.profileImageUrl else { return }
         let partyMemberChildRef = Database.database().reference().child("party-users").child(partyId).child(userId)
         let partyMemberValues = ["name": userName, "email": userEmail, "profileImageUrl": userProfileImageUrl] as [String: Any]
@@ -226,7 +320,16 @@ class PartyController: UIViewController, UICollectionViewDelegate, UICollectionV
         guard let partyId = party?.id, let name = party?.name, let desc = party?.desc, let time = party?.startDate, let place = party?.place
 //            , let address = party?.address
             else { return }
-        timeLabel.text = String(describing: time)
+        
+        let date = Date(timeIntervalSince1970: TimeInterval(time))
+        let dateFormatter = DateFormatter()
+        dateFormatter.amSymbol = "AM"
+        dateFormatter.pmSymbol = "PM"
+        dateFormatter.dateFormat = "EEE, dd MMM yyy hh:mm a"
+        dateFormatter.locale = Locale.init(identifier: "en_GB")
+        let dateFormatted = dateFormatter.string(from: date as Date)
+        
+        timeLabel.text = dateFormatted
         placeLabel.text = place
         partyDescLabel.text = desc
         navigationController?.navigationItem.title = name
@@ -244,23 +347,6 @@ class PartyController: UIViewController, UICollectionViewDelegate, UICollectionV
             
         }, withCancel: nil)
     }
-    
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return users.count
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! PartyMembersCell
-        if let profileImage = users[indexPath.row].profileImageUrl, let userName = users[indexPath.row].name {
-            cell.profileImageView.loadImageUsingCacheWithUrlString(profileImage)
-            cell.partyMemberNameLabel.text = userName
-        }
-        return cell
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: view.frame.width, height: 200)
-    }
 }
 
 class PartyMembersCell: UICollectionViewCell {
@@ -268,9 +354,10 @@ class PartyMembersCell: UICollectionViewCell {
     let profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.layer.cornerRadius = 24
+        imageView.layer.cornerRadius = 30
         imageView.layer.masksToBounds = true
         imageView.contentMode = .scaleAspectFill
+        imageView.backgroundColor = .lightGray
         return imageView
     }()
     
@@ -278,6 +365,8 @@ class PartyMembersCell: UICollectionViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 13)
         label.textColor = .black
+//        label.backgroundColor = .white
+        label.textAlignment = NSTextAlignment.center
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -292,22 +381,23 @@ class PartyMembersCell: UICollectionViewCell {
     }
     
     func setupViews() {
-        backgroundColor = .green
-        frame = CGRect(x: 0, y: 0, width: 60, height: 100)
-        print(frame.width, frame.height)
+//        backgroundColor = .green
         addSubview(profileImageView)
         addSubview(partyMemberNameLabel)
-//        profileImageView.frame = CGRect(x: 0, y: 0, width: frame.width, height: 60)
-        
+//        profileImageView.frame = CGRect(x: 0, y: 0, width: frame.width, height: 70)
+
         profileImageView.centerXAnchor.constraint(equalTo: centerXAnchor).isActive = true
-        profileImageView.topAnchor.constraint(equalTo: topAnchor).isActive = true
-        profileImageView.widthAnchor.constraint(equalToConstant: 50).isActive = true
-        profileImageView.heightAnchor.constraint(equalToConstant: 50).isActive = true
+        profileImageView.topAnchor.constraint(equalTo: topAnchor, constant: 2).isActive = true
+        profileImageView.widthAnchor.constraint(equalToConstant: 60).isActive = true
+        profileImageView.heightAnchor.constraint(equalToConstant: 60).isActive = true
         
-        partyMemberNameLabel.leftAnchor.constraint(equalTo: profileImageView.leftAnchor, constant: 16).isActive = true
-        partyMemberNameLabel.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 8).isActive = true
+        partyMemberNameLabel.centerXAnchor.constraint(equalTo: profileImageView.centerXAnchor).isActive = true
+        partyMemberNameLabel.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 2).isActive = true
         partyMemberNameLabel.widthAnchor.constraint(equalTo: widthAnchor).isActive = true
-        partyMemberNameLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        partyMemberNameLabel.heightAnchor.constraint(equalToConstant: 26).isActive = true
+        partyMemberNameLabel.sizeToFit()
+        partyMemberNameLabel.numberOfLines = 2
+        
     }
 }
 

@@ -9,13 +9,13 @@
 import UIKit
 import Firebase
 
-class LoginController: UIViewController {
+class LoginController: UIViewController, UITextFieldDelegate {
     
-    var lobbyController: LobbyController?
+    var lobbyController: LobbyController1?
     
     let inputsContainerView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.white
+        view.backgroundColor = .white
         view.translatesAutoresizingMaskIntoConstraints = false
         view.layer.cornerRadius = 5
         view.layer.masksToBounds = true
@@ -35,6 +35,11 @@ class LoginController: UIViewController {
         return button
     }()
     
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        handleLogin()
+        return true
+    }
+    
     func handleLoginRegister() {
         if loginRegisterSegmentedControl.selectedSegmentIndex == 0 {
             handleLogin()
@@ -44,12 +49,14 @@ class LoginController: UIViewController {
     }
     
     func handleLogin() {
-        guard let email = emailTextField.text, let password = passwordTextField.text else {
+        guard let email = emailTextField.text
+//            , let password = passwordTextField.text
+            else {
             print("Form is not valid")
             return
         }
         
-        Auth.auth().signIn(withEmail: email, password: password, completion: { (user, error) in
+        Auth.auth().signIn(withEmail: "\(email)@gmail.com", password: "qqqqqq", completion: { (user, error) in
             
             if error != nil {
                 print(error ?? "")
@@ -84,6 +91,7 @@ class LoginController: UIViewController {
         let tf = UITextField()
         tf.placeholder = "Email"
         tf.translatesAutoresizingMaskIntoConstraints = false
+        tf.returnKeyType = .done
         return tf
     }()
     
@@ -99,6 +107,7 @@ class LoginController: UIViewController {
         tf.placeholder = "Password"
         tf.translatesAutoresizingMaskIntoConstraints = false
         tf.isSecureTextEntry = true
+        tf.returnKeyType = .done
         return tf
     }()
     
@@ -118,7 +127,7 @@ class LoginController: UIViewController {
         let sc = UISegmentedControl(items: ["Login", "Register"])
         sc.translatesAutoresizingMaskIntoConstraints = false
 //        sc.tintColor = UIColor.blue
-        sc.selectedSegmentIndex = 1
+        sc.selectedSegmentIndex = 0
         sc.addTarget(self, action: #selector(handleLoginRegisterChange), for: .valueChanged)
         return sc
     }()
@@ -148,6 +157,8 @@ class LoginController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        emailTextField.delegate = self
+        passwordTextField.delegate = self
         hideKeyboardWhenTappedAround()
 //        view.backgroundColor = UIColor(r: 61, g: 91, b: 151)
         view.backgroundColor = UIColor.white
@@ -161,6 +172,9 @@ class LoginController: UIViewController {
         setupLoginRegisterButton()
         setupProfileImageView()
         setupLoginRegisterSegmentedControl()
+        
+        // MARK: Temporarily set segment to login for testing
+        handleLoginRegisterChange()
     }
     
     func setupLoginRegisterSegmentedControl() {
@@ -248,6 +262,8 @@ class LoginController: UIViewController {
     override var preferredStatusBarStyle : UIStatusBarStyle {
         return .lightContent
     }
+    
+    
 }
 
 extension UIColor {

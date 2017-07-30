@@ -50,10 +50,11 @@ class LobbyController: UIViewController, UITableViewDataSource, UITableViewDeleg
         hideKeyboardWhenTappedAround()
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Reset", style: .plain, target: self, action: #selector(handleReset))
-//        navigationController?.navigationBar.barTintColor = colorProvider.colors["purple"]
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Lobby", style: .plain, target: self, action: #selector(handleReset))
+        navigationController?.navigationBar.barTintColor = BackgroundColorProvider().colors["teal"]
+//        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["teal"]
         navigationController?.navigationBar.isOpaque = false
-//        navigationController?.navigationBar.tintColor = UIColor.white
+        navigationController?.navigationBar.tintColor = UIColor.white
         view.addSubview(interestNearbySegmentedControl)
         view.addSubview(tableView)
         setupSearchController()
@@ -122,16 +123,17 @@ class LobbyController: UIViewController, UITableViewDataSource, UITableViewDeleg
     }
     
     func handleLogout() {
-        do {
-            try Auth.auth().signOut()
-        } catch let logoutError {
-            print(logoutError)
-        }
-        userInterests.removeAll()
-        lobbies.removeAll()
-        let loginController = LoginController()
-        loginController.lobbyController = self
-        present(loginController, animated: true, completion: nil)
+//        do {
+//            try Auth.auth().signOut()
+//        } catch let logoutError {
+//            print(logoutError)
+//        }
+//        user = nil
+//        userInterests.removeAll()
+//        lobbies.removeAll()
+//        let loginController = LoginController()
+//        loginController.lobbyController = self
+//        present(loginController, animated: true, completion: nil)
     }
     
     func updateSearchResults(for searchController: UISearchController) {
@@ -308,6 +310,7 @@ class LobbyController: UIViewController, UITableViewDataSource, UITableViewDeleg
     }
     
     func handleReset() {
+        /*
         let db = Database.database().reference()
         
         let alert = UIAlertController(title: "Are you sure?", message: "This will erase all data.", preferredStyle: .alert)
@@ -324,6 +327,10 @@ class LobbyController: UIViewController, UITableViewDataSource, UITableViewDeleg
         
         // 4. Present the alert.
         self.present(alert, animated: true, completion: nil)
+        */
+        
+        let lobby = LobbyController1()
+        navigationController?.pushViewController(lobby, animated: true)
     }
 }
 
@@ -345,28 +352,5 @@ extension LobbyController: GMSPlacePickerViewControllerDelegate {
         
         print("No place selected")
     }
-}
-
-extension UIViewController {
-    func hideKeyboardWhenTappedAround() {
-        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(UIViewController.dismissKeyboard))
-        tap.cancelsTouchesInView = false
-        view.addGestureRecognizer(tap)
-    }
     
-    func dismissKeyboard() {
-        view.endEditing(true)
-    }
-}
-
-extension UITableViewController {
-    override func hideKeyboardWhenTappedAround() {
-        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(UIViewController.dismissKeyboard))
-        tap.cancelsTouchesInView = false
-        view.addGestureRecognizer(tap)
-    }
-    
-    override func dismissKeyboard() {
-        view.endEditing(true)
-    }
 }

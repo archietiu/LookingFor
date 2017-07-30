@@ -43,4 +43,5 @@ struct ServiceKeys {
     static let GMSKey = "AIzaSyBncHgCmouq38Vei7XSYBxbECj_rKX9PuY"
     static let GooglePlacesKey = "AIzaSyDT9HTKyjPwJ-XiA0E6SV-AXQWidThbaOY"
     static let GooglePlacesKey2 = "AIzaSyCbKRgPouFe7jW9K9_Z3kW_136MV64T-TA"
+    static let GoogleMapsDistanceMatrixAPIKey = "AIzaSyAGsbYtaZw8I8IdMXWx-kzbCnQ9rSbbj4s"
 }

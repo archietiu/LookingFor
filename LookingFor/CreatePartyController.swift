@@ -162,10 +162,10 @@ class CreatePartyController: UIViewController {
         hideKeyboardWhenTappedAround()
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Cancel", style: .plain, target: self, action: #selector(handleCancelCreateParty))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Create", style: .plain, target: self, action: #selector(handleCreateParty))
-        navigationController?.navigationBar.barTintColor = BackgroundColorProvider().colors["purple"]
+        navigationController?.navigationBar.barTintColor = BackgroundColorProvider().colors["teal"]
         navigationController?.navigationBar.isOpaque = false
         navigationController?.navigationBar.tintColor = UIColor.white
-        view.backgroundColor = BackgroundColorProvider().colors["orange"]
+        view.backgroundColor = BackgroundColorProvider().colors["white"]
         view.addSubview(inputsContainerView)
         setupNavTitleBar()
         setupInputsContainerView()

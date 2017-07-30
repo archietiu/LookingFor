@@ -47,7 +47,10 @@ class PartyListController: UITableViewController, UISearchResultsUpdating, UISea
         
         hideKeyboardWhenTappedAround()
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(handleAddNewParty))
-        navigationController?.navigationBar.backgroundColor = UIColor.white
+//        navigationController?.navigationBar.backgroundColor = UIColor.white
+        navigationController?.navigationBar.barTintColor = BackgroundColorProvider().colors["teal"]
+        navigationController?.navigationBar.isOpaque = false
+        navigationController?.navigationBar.tintColor = UIColor.white
 //        view.addSubview(tableView)
         setupSearchController()
 //        setupLayoutConstraints()
@@ -143,24 +146,13 @@ class PartyListController: UITableViewController, UISearchResultsUpdating, UISea
             } else {
                 print("User is not in the party!")
                 let partyController = PartyController()
+                partyController.navigationBarTitle = "Join"
+//                partyController.joinLeaveButtonTitle = "Join"
                 partyController.party = party
                 partyController.user = self.user
                 self.navigationController?.pushViewController(partyController, animated: true)
             }
         }, withCancel: nil)
-        
-//        if userId == snapshot.key {
-//            let chatLogController = ChatLogController(collectionViewLayout: UICollectionViewFlowLayout())
-//            chatLogController.user = self.user
-//            chatLogController.party = party
-//            self.navigationController?.pushViewController(chatLogController, animated: true)
-//        }
-//        else {
-//            let partyController = PartyController()
-//            partyController.party = party
-//            partyController.user = self.user
-//            self.navigationController?.pushViewController(partyController, animated: true)
-//        }
     }
 }
 
