@@ -110,9 +110,9 @@ class ChatLogController: UICollectionViewController, UITextFieldDelegate, UIColl
         super.viewDidLoad()
         
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Party", style: .plain, target: self, action: #selector(handleShowPartyDetail))
-        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["teal"]
+//        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["teal"]
         navigationController?.navigationBar.isOpaque = false
-        navigationController?.navigationBar.tintColor = UIColor.white
+//        navigationController?.navigationBar.tintColor = UIColor.white
         collectionView?.contentInset = UIEdgeInsets(top: 8, left: 0, bottom: 8, right: 0)
         collectionView?.alwaysBounceVertical = true
         collectionView?.backgroundColor = UIColor.white

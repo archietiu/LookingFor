@@ -30,8 +30,9 @@ class LobbyController1: UIViewController, UICollectionViewDataSource, UICollecti
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        hideKeyboardWhenTappedAround()
         checkIfUserIsLoggedIn()
-        setupLayout()
+        initializeGMSAPI()
     }
     
     var trendingCellId = "trendingCellId"
@@ -76,7 +77,6 @@ class LobbyController1: UIViewController, UICollectionViewDataSource, UICollecti
     
     func checkIfUserIsLoggedIn() {
         if Auth.auth().currentUser?.uid != nil {
-            initializeGMSAPI()
             fetchUserAndSetupNavBarTitle()
         } else {
             perform(#selector(handleLogout), with: nil, afterDelay: 0)
@@ -98,24 +98,21 @@ class LobbyController1: UIViewController, UICollectionViewDataSource, UICollecti
     }
     
     func fetchUserAndSetupNavBarTitle() {
-        guard let uid = Auth.auth().currentUser?.uid else {
-            //for some reason uid = nil
-            return
-        }
-        
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        print(uid)
         Database.database().reference().child("users").child(uid).observeSingleEvent(of: .value, with: { (snapshot) in
             
             if let dictionary = snapshot.value as? [String: Any] {
                 self.user = User(dictionary: dictionary)
                 self.user?.setValuesForKeys(dictionary)
                 self.user?.id = snapshot.key
-                //                print(self.user?.name ?? "no name")
-                //                print(self.user?.email ?? "no email")
                 if let user = self.user, let userId = self.user?.id {
                     self.setupNavBarWithUser(user)
                     self.fetchUserActivatedInterests(userId: userId)
                     self.fetchLobbies(userId: userId)
                 }
+            } else {
+                self.handleLogout()
             }
             
         }, withCancel: nil)
@@ -151,13 +148,6 @@ class LobbyController1: UIViewController, UICollectionViewDataSource, UICollecti
                         Database.database().reference().child("lobby-parties").child(lobbyId).observe(.value, with: { (snapshot) in
                             let partyCount = snapshot.childrenCount
                             lobby.partyCount = Int(partyCount)
-                            //                            for lobby in self.lobbies {
-                            //                                print(lobby.id ?? "no id")
-                            //                                print(lobby.name ?? "no name")
-                            //                                print(lobby.createdBy ?? "no creator")
-                            //                                print(lobby.dateCreated ?? "no date")
-                            //                                print(lobby.partyCount ?? "no partyCount")
-                            //                            }
                             DispatchQueue.main.async(execute: {
                                 self.categoryCollectionView.reloadData()
                             })
@@ -169,16 +159,13 @@ class LobbyController1: UIViewController, UICollectionViewDataSource, UICollecti
     }
     
     func setupNavBarWithUser(_ user: User) {
-        //        messages.removeAll()
-        //        messagesDictionary.removeAll()
-
-        
-        //        observeUserMessages()
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
-        navigationController?.navigationBar.barTintColor = BackgroundColorProvider().colors["teal"]
-        //        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["teal"]
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Reset", style: .plain, target: self, action: #selector(handleReset))
+//        navigationController?.navigationBar.barTintColor = BackgroundColorProvider().colors["teal"]
+//        navigationController?.navigationBar.barTintColor = .white
+//        navigationController?.navigationBar.backgroundColor = .white
         navigationController?.navigationBar.isOpaque = false
-        navigationController?.navigationBar.tintColor = UIColor.white
+//        navigationController?.navigationBar.tintColor = UIColor.white
         
         let titleView = UIView()
         titleView.frame = CGRect(x: 0, y: 0, width: 100, height: 40)
@@ -223,6 +210,42 @@ class LobbyController1: UIViewController, UICollectionViewDataSource, UICollecti
         containerView.centerYAnchor.constraint(equalTo: titleView.centerYAnchor).isActive = true
         
         self.navigationItem.titleView = titleView
+        
+        view.backgroundColor = BackgroundColorProvider().colors["gray"]
+        
+        view.addSubview(trendingLabel)
+        view.addSubview(trendingCollectionView)
+        view.addSubview(categoryLabel)
+        view.addSubview(categoryCollectionView)
+        trendingCollectionView.register(TrendingCell.self, forCellWithReuseIdentifier: trendingCellId)
+        categoryCollectionView.register(CategoryCell.self, forCellWithReuseIdentifier: categoryCellId)
+        
+        trendingCollectionView.delegate = self
+        trendingCollectionView.dataSource = self
+        categoryCollectionView.delegate = self
+        categoryCollectionView.dataSource = self
+        
+        trendingLabel.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        trendingLabel.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor, constant: 8).isActive = true
+        trendingLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        trendingLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        
+        trendingCollectionView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        trendingCollectionView.topAnchor.constraint(equalTo: trendingLabel.bottomAnchor).isActive = true
+        trendingCollectionView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        trendingCollectionView.heightAnchor.constraint(equalToConstant: 120).isActive = true
+        trendingCollectionView.backgroundColor = .white
+        
+        categoryLabel.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        categoryLabel.topAnchor.constraint(equalTo: trendingCollectionView.bottomAnchor, constant: 8).isActive = true
+        categoryLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        categoryLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
+        
+        categoryCollectionView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
+        categoryCollectionView.topAnchor.constraint(equalTo: categoryLabel.bottomAnchor).isActive = true
+        categoryCollectionView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        categoryCollectionView.bottomAnchor.constraint(equalTo: bottomLayoutGuide.topAnchor).isActive = true
+        categoryCollectionView.backgroundColor = .white
     }
     
     func handleTapProfileImageView() {
@@ -243,6 +266,25 @@ class LobbyController1: UIViewController, UICollectionViewDataSource, UICollecti
     func initializeGMSAPI() {
         GMSServices.provideAPIKey(ServiceKeys.GMSKey)
         GMSPlacesClient.provideAPIKey(ServiceKeys.GooglePlacesKey)
+    }
+    
+    func handleReset() {
+        
+        let db = Database.database().reference()
+        
+        let alert = UIAlertController(title: "Are you sure?", message: "This will erase all data.", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (_) in
+            for childRef in ChildReferences {
+                db.child(childRef).removeValue()
+            }
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: { [weak alert] (_) in
+            alert?.dismiss(animated: true, completion: nil)
+        }))
+        
+        self.present(alert, animated: true, completion: nil)
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -276,7 +318,7 @@ class LobbyController1: UIViewController, UICollectionViewDataSource, UICollecti
         }
         else if collectionView == self.categoryCollectionView {
 //            return CGSize(width: (view.frame.width * 1/2) - 17, height: 170.5)
-            return CGSize(width: view.frame.width - 20, height: 170.5)
+            return CGSize(width: view.frame.width - 20, height: 120)
         }
         
         return CGSize(width: view.frame.width, height: view.frame.height)
@@ -296,55 +338,6 @@ class LobbyController1: UIViewController, UICollectionViewDataSource, UICollecti
         let lobby = self.lobbies[indexPath.item]
         guard let user = self.user else { return }
         showPartyListController(user: user, lobby: lobby)
-    }
-    
-    func setupLayout() {
-        navigationItem.title = "Lobby"
-        view.backgroundColor = BackgroundColorProvider().colors["gray"]
-        
-        view.addSubview(trendingLabel)
-        view.addSubview(trendingCollectionView)
-        view.addSubview(categoryLabel)
-        view.addSubview(categoryCollectionView)
-        trendingCollectionView.register(TrendingCell.self, forCellWithReuseIdentifier: trendingCellId)
-        categoryCollectionView.register(CategoryCell.self, forCellWithReuseIdentifier: categoryCellId)
-        
-        trendingCollectionView.delegate = self
-        trendingCollectionView.dataSource = self
-        categoryCollectionView.delegate = self
-        categoryCollectionView.dataSource = self
-        
-        trendingLabel.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        trendingLabel.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor, constant: 8).isActive = true
-        trendingLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        trendingLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
-        
-        trendingCollectionView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        trendingCollectionView.topAnchor.constraint(equalTo: trendingLabel.bottomAnchor).isActive = true
-        trendingCollectionView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        trendingCollectionView.heightAnchor.constraint(equalToConstant: 120).isActive = true
-        trendingCollectionView.backgroundColor = .white
-//        trendingCollectionView.layer.shadowOpacity = 1
-//        trendingCollectionView.layer.shadowOffset = CGSize.zero
-//        trendingCollectionView.layer.shadowRadius = 10
-//        trendingCollectionView.layer.shadowPath = UIBezierPath(rect: trendingCollectionView.bounds).cgPath
-//        trendingCollectionView.layer.shouldRasterize = true
-//        
-        categoryLabel.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        categoryLabel.topAnchor.constraint(equalTo: trendingCollectionView.bottomAnchor, constant: 8).isActive = true
-        categoryLabel.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        categoryLabel.heightAnchor.constraint(equalToConstant: 20).isActive = true
-        
-        categoryCollectionView.leftAnchor.constraint(equalTo: view.leftAnchor).isActive = true
-        categoryCollectionView.topAnchor.constraint(equalTo: categoryLabel.bottomAnchor).isActive = true
-        categoryCollectionView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        categoryCollectionView.bottomAnchor.constraint(equalTo: bottomLayoutGuide.topAnchor).isActive = true
-        categoryCollectionView.backgroundColor = .white
-//        categoryCollectionView.layer.shadowOpacity = 1
-//        categoryCollectionView.layer.shadowOffset = CGSize.zero
-//        categoryCollectionView.layer.shadowRadius = 10
-//        categoryCollectionView.layer.shadowPath = UIBezierPath(rect: categoryCollectionView.bounds).cgPath
-//        categoryCollectionView.layer.shouldRasterize = true
     }
 }
 

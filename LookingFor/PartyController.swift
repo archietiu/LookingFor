@@ -153,9 +153,9 @@ class PartyController: UIViewController, UICollectionViewDataSource, UICollectio
         view.addSubview(partyMembersSeparatorView)
         view.addSubview(joinLeaveButton)
         
-        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["teal"]
+//        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["teal"]
         navigationController?.navigationBar.isOpaque = false
-        navigationController?.navigationBar.tintColor = UIColor.white
+//        navigationController?.navigationBar.tintColor = UIColor.white
         
         timeLabel.leftAnchor.constraint(equalTo: view.leftAnchor, constant: 12).isActive = true
         timeLabel.topAnchor.constraint(equalTo: topLayoutGuide.bottomAnchor, constant: 8).isActive = true

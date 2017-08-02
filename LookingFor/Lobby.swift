@@ -19,13 +19,13 @@ class Lobby: NSObject {
         self.name = dictionary["name"] as? String
         self.createdBy = dictionary["createdBy"] as? String
         self.dateCreated = dictionary["dateCreated"] as? NSNumber
-//        if let dateCreated = dictionary["dateCreated"] as? TimeInterval {
-//            let date = Date(timeIntervalSinceNow: dateCreated / 10000.0)
-//            let dateFormatter = DateFormatter()
-//            dateFormatter.dateFormat = "EEE, dd MMM yyy hh:mm:ss +zzzz"
-//            dateFormatter.locale = Locale.init(identifier: "en_GB")
-//            let dateFormatted = dateFormatter.string(from: date as Date)
-//            self.dateCreated = dateFormatted
-//        }
+    }
+    
+    func printModel() {
+        print(id ?? "no id")
+        print(name ?? "no name")
+        print(createdBy ?? "no creator")
+        print(dateCreated ?? "no date")
+        print(partyCount ?? "no partyCount")
     }
 }

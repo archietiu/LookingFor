@@ -48,9 +48,9 @@ class PartyListController: UITableViewController, UISearchResultsUpdating, UISea
         hideKeyboardWhenTappedAround()
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Add", style: .plain, target: self, action: #selector(handleAddNewParty))
 //        navigationController?.navigationBar.backgroundColor = UIColor.white
-        navigationController?.navigationBar.barTintColor = BackgroundColorProvider().colors["teal"]
+//        navigationController?.navigationBar.barTintColor = BackgroundColorProvider().colors["teal"]
         navigationController?.navigationBar.isOpaque = false
-        navigationController?.navigationBar.tintColor = UIColor.white
+//        navigationController?.navigationBar.tintColor = UIColor.white
 //        view.addSubview(tableView)
         setupSearchController()
 //        setupLayoutConstraints()

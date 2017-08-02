@@ -52,7 +52,7 @@ class LobbyController: UIViewController, UITableViewDataSource, UITableViewDeleg
         navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Logout", style: .plain, target: self, action: #selector(handleLogout))
         navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Lobby", style: .plain, target: self, action: #selector(handleReset))
         navigationController?.navigationBar.barTintColor = BackgroundColorProvider().colors["teal"]
-//        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["teal"]
+        navigationController?.navigationBar.backgroundColor = BackgroundColorProvider().colors["red"]
         navigationController?.navigationBar.isOpaque = false
         navigationController?.navigationBar.tintColor = UIColor.white
         view.addSubview(interestNearbySegmentedControl)
@@ -310,7 +310,7 @@ class LobbyController: UIViewController, UITableViewDataSource, UITableViewDeleg
     }
     
     func handleReset() {
-        /*
+        
         let db = Database.database().reference()
         
         let alert = UIAlertController(title: "Are you sure?", message: "This will erase all data.", preferredStyle: .alert)
@@ -325,9 +325,9 @@ class LobbyController: UIViewController, UITableViewDataSource, UITableViewDeleg
             alert?.dismiss(animated: true, completion: nil)
         }))
         
-        // 4. Present the alert.
+//         4. Present the alert.
         self.present(alert, animated: true, completion: nil)
-        */
+        
         
         let lobby = LobbyController1()
         navigationController?.pushViewController(lobby, animated: true)
